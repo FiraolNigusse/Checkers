@@ -1,0 +1,55 @@
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Arial, sans-serif;
+  }
+  
+  #board {
+    display: grid;
+    grid-template-columns: repeat(8, 60px);
+    grid-template-rows: repeat(8, 60px);
+    gap: 2px;
+    border: 4px solid #333;
+  }
+  
+  .cell {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .cell.black {
+    background-color: #333;
+  }
+  
+  .cell.white {
+    background-color: #eee;
+  }
+  
+  .piece {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  
+  .red-piece {
+    background-color: red;
+  }
+  
+  .black-piece {
+    background-color: black;
+  }
+  #scoreboard {
+    display: flex;
+    justify-content: space-around;
+    width: 500px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
