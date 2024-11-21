@@ -67,17 +67,21 @@ function isValidMove(fromCell, toCell) {
   const toRow = parseInt(toCell.dataset.row);
   const toCol = parseInt(toCell.dataset.col);
 
-  if (toCell.querySelector(".piece")) return false;
+  if (toCell.querySelector(".piece")) return false; // Cannot move to an occupied cell
 
   const rowDiff = Math.abs(toRow - fromRow);
   const colDiff = Math.abs(toCol - fromCol);
 
-  // Check for standard movement
+  // Standard or king movement
+  const isForwardMove =
+    currentPlayer === "red" ? toRow < fromRow : toRow > fromRow;
+  const isKing = selectedPiece.classList.contains("king");
+
   if (rowDiff === 1 && colDiff === 1) {
-    return currentPlayer === "red" ? toRow < fromRow : toRow > fromRow;
+    return isKing || isForwardMove; // Kings can move backward, others cannot
   }
 
-  // Check for capturing move
+  // Capturing logic for kings and standard pieces
   if (rowDiff === 2 && colDiff === 2) {
     const capturedRow = (fromRow + toRow) / 2;
     const capturedCol = (fromCol + toCol) / 2;
@@ -95,9 +99,10 @@ function isValidMove(fromCell, toCell) {
       // Remove captured piece
       capturedCell.removeChild(capturedPiece);
       updateScore();
-      return true;
+      return isKing || isForwardMove; // Kings can move backward, others cannot
     }
   }
+
   return false;
 }
 
@@ -106,16 +111,44 @@ function movePiece(piece, toCell) {
   const fromCell = piece.parentNode;
   fromCell.removeChild(piece);
   toCell.appendChild(piece);
-  console.log(`Piece moved from ${fromCell.dataset.row},${fromCell.dataset.col} to ${toCell.dataset.row},${toCell.dataset.col}`);
+
+  // Check if the piece becomes a king
+  checkForKing(piece, toCell);
+
+  console.log(
+    `Piece moved from ${fromCell.dataset.row},${fromCell.dataset.col} to ${toCell.dataset.row},${toCell.dataset.col}`
+  );
 }
 
-// Switch turns between players
+// Promote a piece to king
+function promoteToKing(piece) {
+  if (!piece.classList.contains("king")) {
+    piece.classList.add("king");
+    piece.textContent = "K"; // Visual indicator for kings
+    console.log(`${currentPlayer} piece became a King!`);
+  }
+}
+
+// Check for king promotion
+function checkForKing(piece, toCell) {
+  const row = parseInt(toCell.dataset.row);
+
+  if (currentPlayer === "red" && row === 0) {
+    promoteToKing(piece);
+  } else if (currentPlayer === "black" && row === boardSize - 1) {
+    promoteToKing(piece);
+  }
+}
+
+// Switch turns
 function switchTurn() {
   currentPlayer = currentPlayer === "red" ? "black" : "red";
   console.log(`Turn switched. Current player: ${currentPlayer}`);
+
+  checkGameEnd(); // Check if the game is over
 }
 
-// Update the scoreboard after a capture
+// Update the scoreboard
 function updateScore() {
   if (currentPlayer === "red") {
     redScore++;
@@ -124,6 +157,32 @@ function updateScore() {
     blackScore++;
     blackScoreDisplay.textContent = blackScore;
   }
+}
+
+// Check if the game has ended
+function checkGameEnd() {
+  const redPieces = document.querySelectorAll(".red-piece");
+  const blackPieces = document.querySelectorAll(".black-piece");
+
+  if (redPieces.length === 0) {
+    alert("Black wins!");
+    resetGame();
+  } else if (blackPieces.length === 0) {
+    alert("Red wins!");
+    resetGame();
+  }
+}
+
+// Reset the game
+function resetGame() {
+  board.innerHTML = ""; // Clear the board
+  redScore = 0;
+  blackScore = 0;
+  redScoreDisplay.textContent = redScore;
+  blackScoreDisplay.textContent = blackScore;
+  selectedPiece = null;
+  currentPlayer = "red"; // Red always starts
+  initBoard(); // Reinitialize the board
 }
 
 // Start the game
